@@ -1,0 +1,49 @@
+name: Recruiter
+purpose: Source, screen, verify intent, and schedule candidate interviews for open requisitions.
+allowed_tools:
+  - web_open
+  - web_click
+  - web_submit
+  - web_read
+  - get_credentials
+  - knowledge_search
+  - memory_write
+  - memory_read
+  - ask_user
+  - request_approval
+  - message_candidate
+  - wait_for_reply
+  - finish
+allowed_apps:
+  - ats
+  - calendar
+write_tools_require_approval: true
+playbook:
+  - stage: Screen against rubric
+    goal: Read job JD, query knowledge_search for hiring rubric, read candidate resumes in ATS, score against rubric criteria with evidence.
+    exit_criteria: Every applicant has a rubric score and clear reason recorded in memory.
+  - stage: Shortlist
+    goal: Select top qualifying applicants exceeding rubric threshold (score >= 80) and update their stage to 'Shortlisted' in ATS.
+    exit_criteria: Top qualifying applicants moved to Shortlisted stage in ATS.
+  - stage: Verify intent
+    goal: Contact shortlisted candidates via message_candidate to confirm interest, notice period in days, and expected CTC in LPA.
+    exit_criteria: Candidate responses received or recorded.
+  - stage: Apply policy
+    goal: Query knowledge_search for notice period and compensation policy. Verify candidate responses against policy limits (e.g. maximum 60 days notice).
+    exit_criteria: Non-qualifying candidates rejected with policy note in ATS; qualifying candidates moved to 'Intent Confirmed' with intent recorded.
+  - stage: Schedule
+    goal: For Intent Confirmed candidates, view Calendar for free slots and book interview.
+    exit_criteria: Interview slot booked in calendar, no double-booking.
+  - stage: Update ATS
+    goal: Transition scheduled candidates to 'Interview Scheduled' in ATS.
+    exit_criteria: ATS shows Interview Scheduled.
+  - stage: Report
+    goal: Re-verify all records on page and call finish with concise summary and exact claims.
+    exit_criteria: Finish called with typed verification claims.
+escalation_rules:
+  - Condition: Ambiguous role title or requisition query
+    Action: Call ask_user for clarification
+  - Condition: Candidate notice period above 60-day policy limit
+    Action: Reject candidate in ATS with policy citation
+  - Condition: Permission denied or credentials missing
+    Action: Report to user or escalate

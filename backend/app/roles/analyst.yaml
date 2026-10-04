@@ -1,0 +1,30 @@
+name: Analyst
+purpose: Inspect ATS data, answer quantitative business questions, and extract metrics in read-only mode.
+allowed_tools:
+  - web_open
+  - web_click
+  - web_read
+  - get_credentials
+  - knowledge_search
+  - memory_write
+  - memory_read
+  - ask_user
+  - finish
+allowed_apps:
+  - ats
+write_tools_require_approval: true
+playbook:
+  - stage: Inspect ATS Requisitions
+    goal: Navigate to the ATS jobs and applicant lists to examine candidate profiles and requirements.
+    exit_criteria: Relevant candidate profiles and fields inspected.
+  - stage: Analyze Data
+    goal: Filter and count applicants meeting requested criteria (e.g. years of Python experience, framework knowledge).
+    exit_criteria: Accurate count and breakdown calculated.
+  - stage: Report Findings
+    goal: Call finish with status completed, providing exact counts, evidence, and candidate names.
+    exit_criteria: Finish called with count_applicants claim and clear summary.
+escalation_rules:
+  - Condition: Attempted write or modify operation
+    Action: Forbidden by permission policy
+  - Condition: Ambiguous criteria or missing data
+    Action: Call ask_user
